@@ -66,10 +66,11 @@ void report_leaks() {
 #define malloc(s) dbg_malloc(s, __FILE__, __LINE__)
 #define free(p) dbg_free(p, __FILE__, __LINE__)
 
-int main() {
-    // char *leak = malloc(100);   // not freed → leak
+int main(int argc, char *argv[]) {
+    char *leak = malloc(100);   // not freed → leak
     char *ok = malloc(50);
     free(ok);
+    // free(ok);
 
     atexit(report_leaks);  // runs at program exit
     return 0;
