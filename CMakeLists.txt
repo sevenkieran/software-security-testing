@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.10)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+cmake_minimum_required(VERSION 3.28)
+project(MemoryLeakDetector)
+set(CMAKE_C_STANDARD 17)
 
-project(leak_detector VERSION 1.0)
-add_executable(leak_detector leak_detector.c)
+set(SOURCE_FILES src/leak_detector.c
+        test/leak.c)
+
+add_executable(${PROJECT_NAME} ${SOURCE_FILES})

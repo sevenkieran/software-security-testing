@@ -1,77 +1,63 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <dlfcn.h>
 
 typedef struct MemInfo {
     void *ptr;
     size_t size;
-    const char *file;
-    int line;
     struct MemInfo *next;
 } MemInfo;
 
 static MemInfo *alloc_list = NULL;
+static void *(*real_malloc)(size_t) = NULL;
+static void (*real_free)(void *) = NULL;
 
-void add_alloc(void *ptr, size_t size, const char *file, int line) {
-    MemInfo *info = malloc(sizeof(MemInfo));
+void add_alloc(void *ptr, const size_t size) {
+    MemInfo *info = real_malloc(sizeof(MemInfo));
     info->ptr = ptr;
     info->size = size;
-    info->file = file;
-    info->line = line;
     info->next = alloc_list;
     alloc_list = info;
 }
 
-void remove_alloc(void *ptr) {
+void remove_alloc(const void *ptr) {
     MemInfo **curr = &alloc_list;
     while (*curr) {
         if ((*curr)->ptr == ptr) {
             MemInfo *to_free = *curr;
             *curr = (*curr)->next;
-            free(to_free);
+            real_free(to_free);
             return;
         }
         curr = &(*curr)->next;
     }
-    // free called on untracked pointer
-    fprintf(stderr, "Warning: freeing untracked pointer %p\n", ptr);
 }
 
-void *dbg_malloc(size_t size, const char *file, int line) {
-    void *ptr = malloc(size);
-    add_alloc(ptr, size, file, line);
+void *malloc(const size_t size) {
+    if (!real_malloc)
+        real_malloc = dlsym(RTLD_NEXT, "malloc");
+    void *ptr = real_malloc(size);
+    add_alloc(ptr, size);
     return ptr;
 }
 
-void dbg_free(void *ptr, const char *file, int line) {
+void free(void *ptr) {
+    if (!real_free)
+        real_free = dlsym(RTLD_NEXT, "free");
     remove_alloc(ptr);
-    free(ptr);
+    real_free(ptr);
 }
 
-void report_leaks() {
+__attribute__((destructor)) void report_leaks() {
     MemInfo *curr = alloc_list;
     if (!curr) {
-        printf("No memory leaks detected!\n");
+        fprintf(stderr, "No memory leaks detected!\n");
         return;
     }
-    printf("Memory leaks detected:\n");
+    fprintf(stderr, "Memory leaks detected:\n");
     while (curr) {
-        printf("  Leak: %p (size %zu) allocated at %s:%d\n",
-               curr->ptr, curr->size, curr->file, curr->line);
+        fprintf(stderr, "  Leak: %p (size %zu)\n", curr->ptr, curr->size);
         curr = curr->next;
     }
-}
-
-// Macros to capture file & line
-#define malloc(s) dbg_malloc(s, __FILE__, __LINE__)
-#define free(p) dbg_free(p, __FILE__, __LINE__)
-
-int main(int argc, char *argv[]) {
-    char *leak = malloc(100);   // not freed → leak
-    char *ok = malloc(50);
-    free(ok);
-    // free(ok);
-
-    atexit(report_leaks);  // runs at program exit
-    return 0;
 }
