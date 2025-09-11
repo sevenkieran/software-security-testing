@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <iostream.h>
+<iostream.h>
 
 int main() {
     char *a = malloc(100);
