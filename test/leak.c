@@ -1,6 +1,7 @@
 #include <stdlib.h>
+#include <stdio.h>
 
-int main() {
+int mainn() {
     char *a = malloc(100);
     char *b = malloc(50);
     free(b);
