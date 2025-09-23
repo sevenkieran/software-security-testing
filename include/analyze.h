@@ -1,0 +1,8 @@
+//
+// Created by kseven on 9/23/25.
+//
+
+#ifndef MEMORYLEAKDETECTOR_ANALYZE_H
+#define MEMORYLEAKDETECTOR_ANALYZE_H
+
+#endif //MEMORYLEAKDETECTOR_ANALYZE_H
