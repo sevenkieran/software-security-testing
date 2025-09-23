@@ -1,42 +1,54 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "analyze.h"
 
-// structure for findings
-typedef struct {
-    const char* message;
-    size_t line;
-} Finding;
+int memory_leak_rule(const SourceFile *file) {
+    int violations = 0;
+    int malloc_count = 0;
+    int free_count = 0;
 
-void analyze_leaks(const char* code, Finding* findings, size_t* finding_count, size_t max_findings) {
-    size_t line_num = 1;
-    const char* start = code;
-    const char* ptr = code;
+    printf("Checking for memory management issues...\n");
 
-    *finding_count = 0;
+    for (int i = 0; i < file->line_count; i++) {
+        char *line = file->lines[i];
 
-    while (*ptr) {
-        if (*ptr == '\n') {
-            size_t line_len = ptr - start;
-            char line[512];
-            if (line_len >= sizeof(line))
-                line_len = sizeof(line) - 1;
+        //skip comments and preprocessor directives
+        if (is_comment_or_preprocessor(line)) continue;
 
-            strncpy(line, start, line_len);
-            line[line_len] = '\0';
-
-            // very simple check: malloc without free
-            if (strstr(line, "malloc(")) {
-                if (*finding_count < max_findings) {
-                    findings[*finding_count].message = "Potential malloc without free";
-                    findings[*finding_count].line = line_num;
-                    (*finding_count)++;
-                }
-            }
-
-            start = ptr + 1;
-            line_num++;
+        // Check for memory allocation
+        if (strstr(line, "malloc(") || strstr(line, "calloc(") || strstr(line, "realloc(")) {
+            malloc_count++;
+            printf("Line %d: Memory allocation - %s\n", i + 1, line);
         }
-        ptr++;
+
+        // Check for memory deallocation
+        if (strstr(line, "free(")) {
+            free_count++;
+        }
+
+        // Check for obvious double free
+        if (strstr(line, "free(") && strstr(line, "free(") != strrchr(line, 'f')) {
+            violations++;
+            printf("Line %d: Potential double free - %s\n", i + 1, line);
+        }
+
+        // Check for null pointer dereference after malloc
+        if (strstr(line, "malloc(") && i + 1 < file->line_count) {
+            char *next_line = file->lines[i + 1];
+            if (!is_comment_or_preprocessor(next_line) &&
+                !strstr(next_line, "if") && !strstr(next_line, "NULL") && !strstr(next_line, "==")) {
+                violations++;
+                printf("Line %d: malloc() not checked for NULL - %s\n", i + 1, line);
+                }
+        }
     }
+
+    printf("Memory allocations: %d, frees: %d\n", malloc_count, free_count);
+
+    // Simple heuristic: more mallocs than frees suggests potential leak
+    if (malloc_count > free_count) {
+        violations += (malloc_count - free_count);
+        printf("Warning: %d more allocations than frees (potential memory leak)\n",
+               malloc_count - free_count);
+    }
+
+    return violations;
 }

@@ -1,49 +1,44 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "analyze.h"
 
+// List of deprecated headers and their replacements
 typedef struct {
-    const char* message;
-    size_t line;
-} Finding;
+    char *deprecated;
+    char *replacement;
+} HeaderReplacement;
 
-static const char* bad_headers[] = {
-    "<iostream.h>", "<conio.h>", "<bits/stdc++.h>"
+static HeaderReplacement deprecated_headers[] = {
+    {"varargs.h", "stdarg.h"},
+    {"malloc.h", "stdlib.h"},
+    {"memory.h", "string.h"},
+    {"alloc.h", "stdlib.h"},
+    {"values.h", "limits.h and float.h"},
+    {NULL, NULL}
 };
-static const size_t bad_headers_count = sizeof(bad_headers) / sizeof(bad_headers[0]);
 
-void analyze_deprecated_headers(const char* code, Finding* findings, size_t* finding_count, size_t max_findings) {
-    size_t line_num = 1;
-    const char* start = code;
-    const char* ptr = code;
+int deprecated_header_rule(const SourceFile *file) {
+    int violations = 0;
 
-    *finding_count = 0;
+    printf("Checking for deprecated headers...\n");
 
-    while (*ptr) {
-        if (*ptr == '\n') {
-            size_t line_len = ptr - start;
-            char line[512];
-            if (line_len >= sizeof(line))
-                line_len = sizeof(line) - 1;
+    for (int i = 0; i < file->line_count; i++) {
+        char *line = file->lines[i];
+        char *trimmed = trim_line(line);
 
-            strncpy(line, start, line_len);
-            line[line_len] = '\0';
+        // Only check #include lines
+        if (strncmp(trimmed, "#include", 8) != 0) continue;
 
-            for (size_t i = 0; i < bad_headers_count; i++) {
-                char include_line[600];
-                snprintf(include_line, sizeof(include_line), "#include %s", bad_headers[i]);
-                if (strstr(line, include_line)) {
-                    if (*finding_count < max_findings) {
-                        findings[*finding_count].message = bad_headers[i];
-                        findings[*finding_count].line = line_num;
-                        (*finding_count)++;
-                    }
-                }
+        // Check against each deprecated header
+        for (int j = 0; deprecated_headers[j].deprecated != NULL; j++) {
+            if (strstr(line, deprecated_headers[j].deprecated)) {
+                violations++;
+                printf("      Line %d: Deprecated header '%s' found\n",
+                       i + 1, deprecated_headers[j].deprecated);
+                printf("      Suggested: Use #include <%s>\n",
+                       deprecated_headers[j].replacement);
+                printf("      Line: %s\n", line);
             }
-
-            start = ptr + 1;
-            line_num++;
         }
-        ptr++;
     }
+
+    return violations;
 }
