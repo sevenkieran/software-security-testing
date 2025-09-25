@@ -4,9 +4,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(CMAKE_C_STANDARD 17)
 
 set(SOURCE_FILES
-        src/deprecatedHeader.c
+        src/deprecated_header.c
         src/main.c
-        src/leakdetector2.c
+        src/leak_detector.c
 
         include/analyze.h
         src/analyze.c

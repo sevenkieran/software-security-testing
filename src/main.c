@@ -9,7 +9,7 @@ const char* find_test_file() {
         "../../../test/leak.c"
     };
 
-    int num_paths = sizeof(possible_paths) / sizeof(possible_paths[0]);
+    int num_paths = sizeof(possible_paths);
 
     for (int i = 0; i < num_paths; i++) {
         FILE *test_file = fopen(possible_paths[i], "r");
