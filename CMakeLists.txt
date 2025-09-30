@@ -12,6 +12,9 @@ set(SOURCE_FILES
         src/analyze.c
         include/argparse.h
         src/argparse.c
+        include/utils.h
+        src/utils.c
+        include/constants.h
 )
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
