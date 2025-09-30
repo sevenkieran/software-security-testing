@@ -25,7 +25,8 @@ typedef struct {
 // Core functions (from src/analyze.c)
 SourceFile* load_source_file(const char *filename);
 void free_source_file(SourceFile *file);
-void analyze_with_rules(const char *filename, const Rule *rules, int rule_count);
+void analyze_with_rules(const char *filename);
+void analyze_project(const char *path, bool is_directory);
 
 // Helper function for rules
 char* trim_line(const char *line);

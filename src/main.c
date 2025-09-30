@@ -6,7 +6,6 @@
 
 #include "analyze.h"
 #include "argparse.h"
-#include "constants.h"
 
 int main(int argc, char *argv[]) {
     bool recursive_enabled = 0;
@@ -47,13 +46,14 @@ int main(int argc, char *argv[]) {
     if (recursive_enabled && !S_ISDIR(st.st_mode)) {
         fprintf(stderr, "Error: '%s' is not a directory (required with -r)\n", path_arg);
         return 1;
-    } else if (!recursive_enabled && !S_ISREG(st.st_mode)) {
+    }
+    if (!recursive_enabled && !S_ISREG(st.st_mode)) {
         fprintf(stderr, "Error: '%s' is not a regular file\n", path_arg);
         return 1;
     }
 
     // Run analysis
-    analyze_with_rules(path_arg, RULES, RULE_COUNT);
+    analyze_project(path_arg, recursive_enabled);
 
     return 0;
 }

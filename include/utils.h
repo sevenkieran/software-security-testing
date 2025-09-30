@@ -3,13 +3,7 @@
 
 #include <stdbool.h>
 
-/**
- *
- * @param path
- * @return
- */
-bool is_valid_filepath(const char *path);
+bool is_c_or_h_file(const char *path);
 
-bool is_valid_directory(const char *path);
 
 #endif //MEMORYLEAKDETECTOR_UTILS_H
