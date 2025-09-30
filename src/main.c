@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Run analysis
-    analyze_with_rules(path_arg, RULES, sizeof(RULES) / sizeof(RULES[0]));
+    analyze_with_rules(path_arg, RULES, RULE_COUNT);
 
     return 0;
 }

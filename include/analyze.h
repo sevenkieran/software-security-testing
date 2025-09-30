@@ -34,5 +34,6 @@ bool is_comment_or_preprocessor(const char *line);
 // Rule functions (from individual rule files in src/)
 int memory_leak_rule(const SourceFile *file);
 int deprecated_header_rule(const SourceFile *file);
+int integer_overflow_rule(const SourceFile *file);
 
 #endif

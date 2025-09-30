@@ -5,8 +5,6 @@ int memory_leak_rule(const SourceFile *file) {
     int malloc_count = 0;
     int free_count = 0;
 
-    printf("Checking for memory management issues...\n");
-
     for (int i = 0; i < file->line_count; i++) {
         char *line = file->lines[i];
 

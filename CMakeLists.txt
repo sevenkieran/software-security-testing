@@ -7,6 +7,7 @@ set(SOURCE_FILES
         src/deprecated_header.c
         src/main.c
         src/leak_detector.c
+        src/integer_overflow.c
 
         include/analyze.h
         src/analyze.c
@@ -15,6 +16,10 @@ set(SOURCE_FILES
         include/utils.h
         src/utils.c
         include/constants.h
+        src/integer_overflow.c
+        src/constants.c
 )
 
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES}
+        src/integer_overflow.c
+)

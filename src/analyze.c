@@ -1,5 +1,7 @@
 #include "analyze.h"
 
+#include "constants.h"
+
 #define MAX_LINE_LENGTH 2048
 #define INITIAL_LINES 100
 
@@ -69,9 +71,9 @@ void analyze_with_rules(const char *filename, const Rule *rules, int rule_count)
     if (!source) return;
 
     int total_violations = 0;
-
+    printf("Total rules to run: %d\n", RULE_COUNT);
     // Run each rule
-    for (int i = 0; i < rule_count; i++) {
+    for (int i = 0; i < RULE_COUNT; i++) {
         printf("\nChecking %s ---\n", rules[i].name);
         printf("Description: %s\n", rules[i].description);
 

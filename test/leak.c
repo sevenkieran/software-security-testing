@@ -25,6 +25,10 @@ int main() {
     // Potential double free (commented out to avoid crash)
     char *temp = malloc(50);
     free(temp);
+
+    int two = 2;
+    char *intofl = malloc(50 * sizeof(two));
+    free(intofl);
     // free(temp);  // Would be double free if uncommented
 
     return 0;
