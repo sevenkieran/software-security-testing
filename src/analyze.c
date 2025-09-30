@@ -64,7 +64,7 @@ void free_source_file(SourceFile *file) {
     }
 }
 
-void analyze_with_rules(const char *filename, Rule *rules, int rule_count) {
+void analyze_with_rules(const char *filename, const Rule *rules, int rule_count) {
     SourceFile *source = load_source_file(filename);
     if (!source) return;
 
