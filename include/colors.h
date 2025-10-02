@@ -1,0 +1,8 @@
+//
+// Created by armandpadilla17 on 10/1/25.
+//
+
+#ifndef MEMORYLEAKDETECTOR_COLORS_H
+#define MEMORYLEAKDETECTOR_COLORS_H
+
+#endif //MEMORYLEAKDETECTOR_COLORS_H
