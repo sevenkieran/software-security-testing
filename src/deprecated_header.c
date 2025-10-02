@@ -1,4 +1,5 @@
 #include "analyze.h"
+#include "colors.h"
 
 // List of deprecated headers and their replacements
 typedef struct {

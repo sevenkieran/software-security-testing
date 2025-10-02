@@ -18,6 +18,7 @@ set(SOURCE_FILES
         include/constants.h
         src/integer_overflow.c
         src/constants.c
+        include/colors.h
 )
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES}
