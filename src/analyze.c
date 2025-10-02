@@ -7,6 +7,7 @@
 #include "analyze.h"
 #include "constants.h"
 #include "utils.h"
+#include "colors.h"
 
 #define MAX_LINE_LENGTH 2048
 #define INITIAL_LINES 100
@@ -63,7 +64,7 @@ SourceFile* load_source_file(const char* filename)
     }
 
     fclose(file);
-    printf("Loaded %d lines from %s\n", src->line_count, filename);
+    printf("Loaded %d lines from %s\n", GRN src->line_count, filename, reset);
     return src;
 }
 

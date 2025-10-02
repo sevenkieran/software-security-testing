@@ -18,7 +18,7 @@ typedef int (*RuleFunction)(const SourceFile *file);//returns number of violatio
 // Rule definition
 typedef struct {
     char name[32];
-    char description[512];
+    char description[200];
     RuleFunction function;
 } Rule;
 

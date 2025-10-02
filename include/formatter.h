@@ -2,12 +2,27 @@
 // Created by ryanb on 10/2/2025.
 //
 
-#include "../include/formatter.h"
+#ifndef MEMORYLEAKDETECTOR_FORMATTER_H
+#define MEMORYLEAKDETECTOR_FORMATTER_H
 
+#endif //MEMORYLEAKDETECTOR_FORMATTER_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+typedef enum {
+    INTEGER_OVERFLOW,
+
+} ViolationType;
+
+typedef struct {
+    int line_number;
+    char *line_code;
+    ViolationType violation_type;
+} Violation;
+
+typedef struct {
+    Violation *violation;
+    struct ViolationNode* next;
+
+} ViolationNode;
 
 ViolationNode* createNode(int line, const char* message) {
     ViolationNode* newNode = (ViolationNode*)malloc(sizeof(ViolationNode));
@@ -15,17 +30,10 @@ ViolationNode* createNode(int line, const char* message) {
         printf("Memory allocation failed\n");
         exit(1);
     }
-
-    newNode->violation = malloc(sizeof(Violation));
-    if (!newNode->violation) {
-        printf("Memory allocation failed\n");
-        exit(1);
-    }
-
-    newNode->violation->line_number = line;
-    newNode->violation->line_code = strdup(message); // safer than strncpy
+    newNode->data.line = line;
+    strncpy(newNode->data.message, message, sizeof(newNode->data.message) - 1);
+    newNode->data.message[sizeof(newNode->data.message) - 1] = '\0'; // ensure null-termination
     newNode->next = NULL;
-
     return newNode;
 }
 
