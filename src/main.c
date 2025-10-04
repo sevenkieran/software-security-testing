@@ -6,7 +6,7 @@
 
 #include "analyze.h"
 #include "argparse.h"
-
+#include "colors.h"
 int main(int argc, char *argv[]) {
     bool recursive_enabled = 0;
 
@@ -44,11 +44,11 @@ int main(int argc, char *argv[]) {
     }
 
     if (recursive_enabled && !S_ISDIR(st.st_mode)) {
-        fprintf(stderr, "Error: '%s' is not a directory (required with -r)\n", path_arg);
+        fprintf(stderr, BRED"Error: '%s' is not a directory (required with -r)\n"reset, path_arg);
         return 1;
     }
     if (!recursive_enabled && !S_ISREG(st.st_mode)) {
-        fprintf(stderr, "Error: '%s' is not a regular file\n", path_arg);
+        fprintf(stderr, BRED"Error: '%s' is not a regular file\n"reset, path_arg);
         return 1;
     }
 

@@ -4,11 +4,13 @@
 
 #include "argparse.h"
 
+#include "colors.h"
+
 
 void print_usage(const char *prog, const struct option *long_options)
 {
-    printf("Usage: %s [options] file|directory\n", prog);
-    printf("  Options:\n");
+    printf(WHT"Usage: %s [options] file|directory\n"reset, prog);
+    printf(CYN"  Options:\n"reset);
 
     for (int i = 0; long_options[i].name != NULL; i++) {
         char short_opt = long_options[i].val;

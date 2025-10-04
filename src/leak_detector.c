@@ -1,4 +1,5 @@
 #include "analyze.h"
+#include "colors.h"
 
 int memory_leak_rule(const SourceFile *file) {
     int violations = 0;
@@ -14,7 +15,7 @@ int memory_leak_rule(const SourceFile *file) {
         // Check for memory allocation
         if (strstr(line, "malloc(") || strstr(line, "calloc(") || strstr(line, "realloc(")) {
             malloc_count++;
-            printf("Line %d: Memory allocation - %s\n", i + 1, line);
+            printf(GRN"Line %d: Memory allocation - %s\n"reset, i + 1, line);
         }
 
         // Check for memory deallocation
@@ -25,7 +26,7 @@ int memory_leak_rule(const SourceFile *file) {
         // Check for obvious double free
         if (strstr(line, "free(") && strstr(line, "free(") != strrchr(line, 'f')) {
             violations++;
-            printf("Line %d: Potential double free - %s\n", i + 1, line);
+            printf(RED"Line %d: Potential double free - %s\n"reset, i + 1, line);
         }
 
         // Check for null pointer dereference after malloc
@@ -34,17 +35,17 @@ int memory_leak_rule(const SourceFile *file) {
             if (!is_comment_or_preprocessor(next_line) &&
                 !strstr(next_line, "if") && !strstr(next_line, "NULL") && !strstr(next_line, "==")) {
                 violations++;
-                printf("Line %d: malloc() not checked for NULL - %s\n", i + 1, line);
+                printf(YEL"Line %d: malloc() not checked for NULL - %s\n"reset, i + 1, line);
                 }
         }
     }
 
-    printf("Memory allocations: %d, frees: %d\n", malloc_count, free_count);
+    printf(BWHT"Memory allocations: %d, frees: %d\n"reset, malloc_count, free_count);
 
     // Simple heuristic: more mallocs than frees suggests potential leak
     if (malloc_count > free_count) {
         violations += (malloc_count - free_count);
-        printf("Warning: %d more allocations than frees (potential memory leak)\n",
+        printf(BYEL"Warning: %d more allocations than frees (potential memory leak)\n"reset,
                malloc_count - free_count);
     }
 

@@ -8,17 +8,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "colors.h"
 
 ViolationNode* createNode(int line, const char* message) {
     ViolationNode* newNode = (ViolationNode*)malloc(sizeof(ViolationNode));
     if (!newNode) {
-        printf("Memory allocation failed\n");
+        printf(BRED"Memory allocation failed\n"reset);
         exit(1);
     }
 
     newNode->violation = malloc(sizeof(Violation));
     if (!newNode->violation) {
-        printf("Memory allocation failed\n");
+        printf(BRED"Memory allocation failed\n"reset);
         exit(1);
     }
 

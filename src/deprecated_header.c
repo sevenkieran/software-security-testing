@@ -19,7 +19,7 @@ static HeaderReplacement deprecated_headers[] = {
 int deprecated_header_rule(const SourceFile *file) {
     int violations = 0;
 
-    printf("Checking for deprecated headers...\n");
+    printf(BWHT"Checking for deprecated headers...\n"reset);
 
     for (int i = 0; i < file->line_count; i++) {
         char *line = file->lines[i];
@@ -32,11 +32,11 @@ int deprecated_header_rule(const SourceFile *file) {
         for (int j = 0; deprecated_headers[j].deprecated != NULL; j++) {
             if (strstr(line, deprecated_headers[j].deprecated)) {
                 violations++;
-                printf("      Line %d: Deprecated header '%s' found\n",
+                printf(YEL"      Line %d: Deprecated header '%s' found\n"reset,
                        i + 1, deprecated_headers[j].deprecated);
-                printf("      Suggested: Use #include <%s>\n",
+                printf(CYN"      Suggested: Use #include <%s>\n"reset,
                        deprecated_headers[j].replacement);
-                printf("      Line: %s\n", line);
+                printf(WHT"      Line: %s\n"reset, line);
             }
         }
     }
