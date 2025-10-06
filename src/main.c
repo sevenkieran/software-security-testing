@@ -7,9 +7,10 @@
 #include "analyze.h"
 #include "argparse.h"
 #include "colors.h"
+#include "formatter.h"
 int main(int argc, char *argv[]) {
     bool recursive_enabled = 0;
-
+    ViolationNode* violations_list = NULL;
     static struct option long_options[] = {
         {"help",      no_argument, 0, 'h'},
         {"recursive", no_argument, 0, 'r'},
