@@ -22,7 +22,7 @@ static ViolationNode* create_node(int line, const char* line_code, ViolationType
     newNode->data.line_code = strdup(line_code);//allocate memory and copy next line
     if (!newNode->data.line_code) {
         fprintf(stderr, BRED "Memory allocation failed for line_code string\n" reset);
-        free(newNode); // Clean up the node we just allocated
+        free(newNode);
         exit(EXIT_FAILURE);
     }
 
@@ -33,23 +33,21 @@ static ViolationNode* create_node(int line, const char* line_code, ViolationType
 void append_violation(ViolationNode** head, int line, const char* line_code, ViolationType type) {
     ViolationNode* newNode = create_node(line, line_code, type);
 
-    // If the list is empty, the new node becomes the head
-    if (*head == NULL) {
+
+    if (*head == NULL) {//if empty, new node is now head
         *head = newNode;
         return;
     }
 
-    // Otherwise, travel to the end of the list
-    ViolationNode* current = *head;
+    ViolationNode* current = *head;//continue traversing
     while (current->next != NULL) {
         current = current->next;
     }
 
-    // Append the new node at the end
     current->next = newNode;
 }
 
-// Helper function to get a string name for an enum type
+//replacement for current RULES array
 static const char* get_violation_type_string(ViolationType type) {
     switch (type) {
         case INTEGER_OVERFLOW:
@@ -86,8 +84,8 @@ void free_violations(ViolationNode* head) {
 
     while (current != NULL) {
         next_node = current->next;
-        free(current->data.line_code); // Free the duplicated string
-        free(current);                 // Free the node itself
+        free(current->data.line_code); //free duplicated string
+        free(current);
         current = next_node;
     }
 }
