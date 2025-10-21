@@ -22,8 +22,7 @@ SourceFile* load_source_file(const char* filename)
     } //returns pointer that holds filename, code and linecount
 
     SourceFile* src = malloc(sizeof(SourceFile));
-    if (!src)
-    {
+    if (!src){
         fclose(file);
         return NULL;
     } //allocate space that holds filename and lines array

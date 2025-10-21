@@ -1,27 +1,31 @@
-// src/formatter.c
-
-#include "../include/formatter.h"
-#include "../include/colors.h" // Assuming colors.h is in the include directory
+#include "formatter.h"
+#include "colors.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-
-static ViolationNode* create_node(int line, const char* line_code, ViolationType type) {
+static ViolationNode* create_node(int line, const char* line_code,
+                                  const char* message,
+                                  ViolationType type) {
     ViolationNode* newNode = (ViolationNode*)malloc(sizeof(ViolationNode));
     if (!newNode) {
-        fprintf(stderr, BRED "Memory allocation failed for new violation node\n" reset);
+        fprintf(stderr, BRED "Memory allocation failed for violation node\n" reset);
         exit(EXIT_FAILURE);
     }
 
-
-    newNode->data.line_number = line;//populate Violation data
+    newNode->data.line_number = line;
     newNode->data.violation_type = type;
 
+    // Duplicate strings
+    newNode->data.line_code = line_code ? strdup(line_code) : NULL;
+    newNode->data.message = message ? strdup(message) : NULL;
 
-    newNode->data.line_code = strdup(line_code);//allocate memory and copy next line
-    if (!newNode->data.line_code) {
-        fprintf(stderr, BRED "Memory allocation failed for line_code string\n" reset);
+
+    if ((line_code && !newNode->data.line_code) ||
+        (message && !newNode->data.message)) {
+        fprintf(stderr, BRED "Memory allocation failed for strings\n" reset);
+        free(newNode->data.line_code);
+        free(newNode->data.message);
         free(newNode);
         exit(EXIT_FAILURE);
     }
@@ -30,52 +34,56 @@ static ViolationNode* create_node(int line, const char* line_code, ViolationType
     return newNode;
 }
 
-void append_violation(ViolationNode** head, int line, const char* line_code, ViolationType type) {
-    ViolationNode* newNode = create_node(line, line_code, type);
+void append_violation(ViolationNode** head, int line, const char* line_code,
+                     const char* message, ViolationType type) {
+    ViolationNode* newNode = create_node(line, line_code, message, type);
 
-
-    if (*head == NULL) {//if empty, new node is now head
+    if (*head == NULL) {
         *head = newNode;
         return;
     }
 
-    ViolationNode* current = *head;//continue traversing
+    ViolationNode* current = *head;
     while (current->next != NULL) {
         current = current->next;
     }
-
     current->next = newNode;
 }
 
-//replacement for current RULES array
 static const char* get_violation_type_string(ViolationType type) {
     switch (type) {
-        case INTEGER_OVERFLOW:
-            return "Integer Overflow";
-        case DEPRECATED_HEADER:
-            return "Deprecated Header";
-        default:
-            return "Unknown Violation";
+        case INTEGER_OVERFLOW:   return "Integer Overflow";
+        case DEPRECATED_HEADER:  return "Deprecated Header";
+        case MEMORY_LEAK:        return "Memory Leak";
+        default:                 return "Unknown Violation";
     }
 }
 
-void print_violations(const ViolationNode* head) {
+void print_violations(const ViolationNode* head, const char* rule_name) {
     if (head == NULL) {
-        printf(BGRN "No violations found.\n" reset);
-        return;
+        return; // Don't print anything if no violations
     }
 
-    printf(BHYEL "--- Analyzing ---\n" reset);
     const ViolationNode* current = head;
-    int count = 1;
     while (current != NULL) {
-        printf(BHWHT "\nViolation #%d\n" reset, count++);
-        printf(HYEL "  Type: " reset "%s\n", get_violation_type_string(current->data.violation_type));
-        printf(HYEL "  Line: " reset "%d\n", current->data.line_number);
-        printf(HYEL "  Code: " reset BHCYN "`%s`\n" reset, current->data.line_code);
+        printf(HYEL "  ⚠️  Line %d: " reset, current->data.line_number);
+        if (current->data.message) {
+            printf("%s\n", current->data.message);
+        } else {
+            printf("%s\n", get_violation_type_string(current->data.violation_type));
+        }
+
+        if (current->data.line_code && strlen(current->data.line_code) > 0) {
+            printf(HCYN "      Code: %s\n" reset, current->data.line_code);
+        }
+
+        //if (current->data.suggestion) {
+          //  printf(HMAG "      💡 Suggestion: %s\n" reset, current->data.suggestion);
+        //}
+
+        printf("\n");
         current = current->next;
     }
-    printf(BHYEL "\n--- End of Report ---\n" reset);
 }
 
 void free_violations(ViolationNode* head) {
@@ -84,8 +92,20 @@ void free_violations(ViolationNode* head) {
 
     while (current != NULL) {
         next_node = current->next;
-        free(current->data.line_code); //free duplicated string
+        free(current->data.line_code);
+        free(current->data.message);
+        //free(current->data.suggestion);
         free(current);
         current = next_node;
     }
+}
+
+int count_violations(const ViolationNode* head) {
+    int count = 0;
+    const ViolationNode* current = head;
+    while (current != NULL) {
+        count++;
+        current = current->next;
+    }
+    return count;
 }

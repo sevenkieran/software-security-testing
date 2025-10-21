@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include "formatter.h"
 
 typedef struct {
     char **lines;
