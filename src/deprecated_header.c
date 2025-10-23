@@ -1,7 +1,8 @@
 #include "analyze.h"
 #include "colors.h"
+#include <stdio.h>
+#include "formatter.h"
 
-// List of deprecated headers and their replacements
 typedef struct {
     char *deprecated;
     char *replacement;
@@ -16,27 +17,29 @@ static HeaderReplacement deprecated_headers[] = {
     {NULL, NULL}
 };
 
-int deprecated_header_rule(const SourceFile *file) {
-    int violations = 0;
-
-    printf(BWHT"Checking for deprecated headers...\n"reset);
+ViolationNode* deprecated_header_rule(const SourceFile *file) {
+    ViolationNode*  violations = NULL;
 
     for (int i = 0; i < file->line_count; i++) {
         char *line = file->lines[i];
         char *trimmed = trim_line(line);
 
-        // Only check #include lines
         if (strncmp(trimmed, "#include", 8) != 0) continue;
 
-        // Check against each deprecated header
         for (int j = 0; deprecated_headers[j].deprecated != NULL; j++) {
             if (strstr(line, deprecated_headers[j].deprecated)) {
-                violations++;
-                printf(YEL"      Line %d: Deprecated header '%s' found\n"reset,
-                       i + 1, deprecated_headers[j].deprecated);
-                printf(CYN"      Suggested: Use #include <%s>\n"reset,
-                       deprecated_headers[j].replacement);
-                printf(WHT"      Line: %s\n"reset, line);
+
+                char message[256];//for suggested replacement, can just put directly in message
+                snprintf(message, sizeof(message),
+                         "Deprecated header <%s> used. Consider replacing with <%s>.",
+                         deprecated_headers[j].deprecated,
+                         deprecated_headers[j].replacement);
+
+                append_violation(&violations,
+                                 i + 1,
+                                 line,
+                                 message,
+                                 DEPRECATED_HEADER);
             }
         }
     }

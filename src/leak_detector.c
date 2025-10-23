@@ -2,7 +2,7 @@
 #include "formatter.h"
 #include <string.h>
 
-memory_leak_rule(const SourceFile *file) {
+ViolationNode* memory_leak_rule(const SourceFile *file) {
     ViolationNode* violations = NULL;
 
     int malloc_count = 0;
@@ -13,7 +13,7 @@ memory_leak_rule(const SourceFile *file) {
 
         if (is_comment_or_preprocessor(line)) continue;
 
-        // Check for memory allocation
+        //Check for memory allocation
         if (strstr(line, "malloc(") || strstr(line, "calloc(") || strstr(line, "realloc(")) {
             malloc_count++;
             append_violation(&violations,
@@ -23,12 +23,12 @@ memory_leak_rule(const SourceFile *file) {
                            MEMORY_LEAK);
         }
 
-        // Check for free
+        //Check for free
         if (strstr(line, "free(")) {
             free_count++;
         }
 
-        // Check for double free
+        //Check for double free
         if (strstr(line, "free(") && strstr(line, "free(") != strrchr(line, 'f')) {
             append_violation(&violations,
                            i + 1,
@@ -38,7 +38,6 @@ memory_leak_rule(const SourceFile *file) {
         }
     }
 
-    // Overall leak check
     if (malloc_count > free_count) {
         char message[256];
         snprintf(message, sizeof(message),

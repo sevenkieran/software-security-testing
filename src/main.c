@@ -8,6 +8,7 @@
 #include "argparse.h"
 #include "colors.h"
 #include "formatter.h"
+
 int main(int argc, char *argv[]) {
     bool recursive_enabled = 0;
     ViolationNode* violations_list = NULL;
@@ -33,7 +34,7 @@ int main(int argc, char *argv[]) {
     }
     if (optind >= argc) {
         print_usage(argv[0], long_options);
-        return 1;   // <-- make sure we stop here
+        return 1;
     }
 
     const char *path_arg = argv[optind];
@@ -45,15 +46,15 @@ int main(int argc, char *argv[]) {
     }
 
     if (recursive_enabled && !S_ISDIR(st.st_mode)) {
-        fprintf(stderr, BRED"Error: '%s' is not a directory (required with -r)\n"reset, path_arg);
+        fprintf(stderr, BRED"Error: '%s' is not a directory (required with -r)\n"CLRreset, path_arg);
         return 1;
     }
     if (!recursive_enabled && !S_ISREG(st.st_mode)) {
-        fprintf(stderr, BRED"Error: '%s' is not a regular file\n"reset, path_arg);
+        fprintf(stderr, BRED"Error: '%s' is not a regular file\n"CLRreset, path_arg);
         return 1;
     }
 
-    // Run analysis
+    //Run analysis
     analyze_project(path_arg, recursive_enabled);
 
     return 0;

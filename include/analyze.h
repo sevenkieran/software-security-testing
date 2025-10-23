@@ -14,7 +14,7 @@ typedef struct {
 } SourceFile;
 
 
-typedef int (*RuleFunction)(const SourceFile *file);//returns number of violations found
+typedef ViolationNode* (*RuleFunction)(const SourceFile *file);//returns number of violations found
 
 // Rule definition
 typedef struct {
@@ -23,19 +23,19 @@ typedef struct {
     RuleFunction function;
 } Rule;
 
-// Core functions (from src/analyze.c)
+//Core functions in analyze.c
 SourceFile* load_source_file(const char *filename);
 void free_source_file(SourceFile *file);
 void analyze_with_rules(const char *filename);
 void analyze_project(const char *path, bool is_directory);
 
-// Helper function for rules
+//Helper function
 char* trim_line(const char *line);
 bool is_comment_or_preprocessor(const char *line);
 
 // Rule functions (from individual rule files in src/)
-int memory_leak_rule(const SourceFile *file);
-int deprecated_header_rule(const SourceFile *file);
-int integer_overflow_rule(const SourceFile *file);
+ViolationNode* memory_leak_rule(const SourceFile *file);
+ViolationNode* deprecated_header_rule(const SourceFile *file);
+ViolationNode* integer_overflow_rule(const SourceFile *file);
 
 #endif

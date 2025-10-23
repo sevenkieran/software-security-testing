@@ -17,7 +17,7 @@ SourceFile* load_source_file(const char* filename)
     FILE* file = fopen(filename, "r");
     if (!file)
     {
-        printf(BRED"Cannot open file '%s'\n"reset, filename);
+        printf(BRED"Cannot open file '%s'\n"CLRreset, filename);
         return NULL;
     } //returns pointer that holds filename, code and linecount
 
@@ -50,7 +50,7 @@ SourceFile* load_source_file(const char* filename)
             char** new_lines = realloc(src->lines, capacity * sizeof(char*));
             if (!new_lines)
             {
-                printf(BRED"Memory allocation error\n"reset);
+                printf(BRED"Memory allocation error\n"CLRreset);
                 break;
             }
             src->lines = new_lines;
@@ -63,7 +63,7 @@ SourceFile* load_source_file(const char* filename)
     }
 
     fclose(file);
-    printf(BCYN"Loaded %d lines from %s\n"reset,src->line_count, filename);
+    printf(BCYN"Loaded %d lines from %s\n"CLRreset,src->line_count, filename);
     return src;
 }
 
@@ -94,14 +94,14 @@ void analyze_project(const char* path, const bool is_directory)
         if (S_ISREG(st.st_mode)) {
             analyze_with_rules(path);
         } else {
-            fprintf(stderr, BRED"Error: '%s' is not a regular file\n"reset, path);
+            fprintf(stderr, BRED"Error: '%s' is not a regular file\n"CLRreset, path);
         }
         return;
     }
 
     // Recursive mode: must be a directory
     if (!S_ISDIR(st.st_mode)) {
-        fprintf(stderr, BRED"Error: '%s' is not a directory (with -r)\n"reset, path);
+        fprintf(stderr, BRED"Error: '%s' is not a directory (with -r)\n"CLRreset, path);
         return;
     }
 
@@ -143,28 +143,35 @@ void analyze_with_rules(const char* filename)
     if (!source) return;
 
     int total_violations = 0;
-    printf(BCYN"Total rules to run: %d\n"reset, RULE_COUNT);
+    printf(BCYN"\nAnalyzing: %s\n"CLRreset, filename);
+    printf(BCYN"Total rules to check: %d\n"CLRreset, RULE_COUNT);
+
     // Run each rule
     for (int i = 0; i < RULE_COUNT; i++)
     {
-        printf(BWHT"\nChecking %s ---\n"reset, RULES[i].name);
-        printf(BWHT"Description: %s\n"reset, RULES[i].description);
+        printf(BWHT"\n--- Checking Rule: %s ---\n"CLRreset, RULES[i].name);
+        printf(BWHT"Description: %s\n"CLRreset, RULES[i].description);
 
-        int violations = RULES[i].function(source);
+        ViolationNode* violations_list = RULES[i].function(source);
 
-        if (violations > 0)
+        int violation_count = count_violations(violations_list);
+
+        if (violation_count > 0)
         {
-            printf(BYEL"Found %d violation(s)\n"reset, violations);
-            total_violations += violations;
+            printf(BYEL"Found %d violation(s):\n"CLRreset, violation_count);
+            print_violations(violations_list, RULES[i].name);
+            total_violations += violation_count;
         }
         else
         {
-            printf(BGRN"No violations found\n"reset);
+            printf(BGRN"No violations found\n"CLRreset);
         }
+
+        free_violations(violations_list);
     }
 
-    printf(BWHT"\nAnalysis Complete\n"reset);
-    printf(BWHT"Total violations: %d\n"reset, total_violations);
+    printf(BWHT"\n--- Analysis Complete for %s ---\n"CLRreset, filename);
+    printf(BWHT"Total violations found in this file: %d\n\n"CLRreset, total_violations);
 
     free_source_file(source);
 }
