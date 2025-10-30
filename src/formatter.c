@@ -1,5 +1,5 @@
-#include "formatter.h"
 #include "colors.h"
+#include "formatter.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

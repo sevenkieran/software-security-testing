@@ -21,6 +21,8 @@ set(SOURCE_FILES
         include/colors.h
         src/formatter.c
         include/formatter.h
+        include/json_export.h
+        src/json_export.c
 )
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES}
