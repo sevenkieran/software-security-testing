@@ -10,6 +10,7 @@ typedef enum {
     INTEGER_OVERFLOW,
     DEPRECATED_HEADER,
     MEMORY_LEAK,
+    SIGNAL_SAFETY,
 
 } ViolationType;
 

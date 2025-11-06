@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
 
 int main() {
     printf("Testing memory leak detection\n");
@@ -31,5 +33,19 @@ int main() {
     free(intofl);
     // free(temp);  // Would be double free if uncommented
 
+    signal(SIGUSR1,terminate_handler);
+    while (1) {
+        pause();
+    }
+
+    signal(SIG1, unsafe_handlers);
     return 0;
+}
+
+//testing signal safety, using an unsafe function in a signal handler
+void unsafe_handlers(int signal) {
+    printf("Terminating %d", signal);
+
+    char *buff2 = malloc(50);
+
 }

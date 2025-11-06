@@ -37,6 +37,7 @@ bool is_comment_or_preprocessor(const char *line);
 ViolationNode* memory_leak_rule(const SourceFile *file);
 ViolationNode* deprecated_header_rule(const SourceFile *file);
 ViolationNode* integer_overflow_rule(const SourceFile *file);
+ViolationNode* signal_safety_rule(const SourceFile *file);
 int analyze_with_rules_return_count(const char *filename);
 
 #endif

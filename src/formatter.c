@@ -55,6 +55,7 @@ static const char* get_violation_type_string(ViolationType type) {
         case INTEGER_OVERFLOW:   return "Integer Overflow";
         case DEPRECATED_HEADER:  return "Deprecated Header";
         case MEMORY_LEAK:        return "Memory Leak";
+        case SIGNAL_SAFETY:      return "Signal Safety";
         default:                 return "Unknown Violation";
     }
 }
