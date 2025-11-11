@@ -1,0 +1,59 @@
+name: Security Analysis
+
+on:
+  push:
+    branches: [ main, format-integration ]
+  pull_request:
+    branches: [ format-integration ]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake gcc build-essential jq
+
+
+      - name: Build Security Analyzer
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make
+
+      - name: Run Security Analysis
+        run: |
+          set -e
+          ./build/MemoryLeakDetector -r --json analysis-report.json . || echo "Analyzer exited with code $? (may be due to findings)"
+
+      - name: Upload Analysis Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-report
+          path: analysis-report.json
+
+      - name: Check for Violations
+        run: |
+          # 'jq' is a tool on the GitHub runner to read JSON files
+          # It reads the "total_violations" number from the report
+          VIOLATIONS=$(jq '.total_violations' analysis-report.json)
+          
+          echo "=========================================="
+          echo "TOTAL VIOLATIONS FOUND: $VIOLATIONS"
+          echo "=========================================="
+          
+          if [ "$VIOLATIONS" -gt 0 ]; then
+            echo "Security analysis found $VIOLATIONS total violation(s)"
+            exit 1
+          else
+            echo "All files passed security analysis!"
+          fi
