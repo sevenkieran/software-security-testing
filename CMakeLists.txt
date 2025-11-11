@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.16.3)
 project(MemoryLeakDetector)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(CMAKE_C_STANDARD 17)
@@ -21,6 +21,9 @@ set(SOURCE_FILES
         include/colors.h
         src/formatter.c
         include/formatter.h
+        include/json_export.h
+        src/json_export.c
+        src/signal_safety.c
 )
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES}

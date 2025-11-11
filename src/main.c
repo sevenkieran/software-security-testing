@@ -8,23 +8,31 @@
 #include "argparse.h"
 #include "colors.h"
 #include "formatter.h"
+#include "../include/json_export.h"
+
 int main(int argc, char *argv[]) {
-    bool recursive_enabled = 0;
+    bool recursive_enabled = false;
     ViolationNode* violations_list = NULL;
+    char *json_output = NULL;
+
     static struct option long_options[] = {
         {"help",      no_argument, 0, 'h'},
         {"recursive", no_argument, 0, 'r'},
+        {"json", required_argument, 0, 'j'},
         {0, 0, 0, 0}
     };
 
     int opt;
-    while ((opt = getopt_long(argc, argv, "hr", long_options, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "hrj", long_options, NULL)) != -1) {
         switch (opt) {
         case 'h':
             print_usage(argv[0], long_options);
             return 0;
         case 'r':
             recursive_enabled = 1;
+            break;
+        case 'j':
+            json_output = optarg;
             break;
         default:
             print_usage(argv[0], long_options);
@@ -33,7 +41,7 @@ int main(int argc, char *argv[]) {
     }
     if (optind >= argc) {
         print_usage(argv[0], long_options);
-        return 1;   // <-- make sure we stop here
+        return 1;
     }
 
     const char *path_arg = argv[optind];
@@ -45,16 +53,24 @@ int main(int argc, char *argv[]) {
     }
 
     if (recursive_enabled && !S_ISDIR(st.st_mode)) {
-        fprintf(stderr, BRED"Error: '%s' is not a directory (required with -r)\n"reset, path_arg);
+        fprintf(stderr, BRED"Error: '%s' is not a directory (required with -r)\n"CLRreset, path_arg);
         return 1;
     }
     if (!recursive_enabled && !S_ISREG(st.st_mode)) {
-        fprintf(stderr, BRED"Error: '%s' is not a regular file\n"reset, path_arg);
+        fprintf(stderr, BRED"Error: '%s' is not a regular file\n"CLRreset, path_arg);
         return 1;
     }
 
-    // Run analysis
-    analyze_project(path_arg, recursive_enabled);
+    int total_violations = analyze_project(path_arg, recursive_enabled);
 
-    return 0;
+    printf("\nAnalysis Complete.\nTotal Violations: %d\n", total_violations);
+
+    if (json_output) {
+        export_violations_json(path_arg, total_violations, json_output);
+    }
+
+
+
+    return (total_violations > 0) ? 1 : 0;
 }
+

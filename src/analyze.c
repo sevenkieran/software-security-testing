@@ -1,3 +1,4 @@
+#include "colors.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,7 +8,7 @@
 #include "analyze.h"
 #include "constants.h"
 #include "utils.h"
-#include "colors.h"
+
 
 #define MAX_LINE_LENGTH 2048
 #define INITIAL_LINES 100
@@ -17,13 +18,12 @@ SourceFile* load_source_file(const char* filename)
     FILE* file = fopen(filename, "r");
     if (!file)
     {
-        printf(BRED"Cannot open file '%s'\n"reset, filename);
+        fprintf(stderr, "%sCannot open file '%s'\n%s", BRED, filename, CLRreset);
         return NULL;
     } //returns pointer that holds filename, code and linecount
 
     SourceFile* src = malloc(sizeof(SourceFile));
-    if (!src)
-    {
+    if (!src){
         fclose(file);
         return NULL;
     } //allocate space that holds filename and lines array
@@ -38,20 +38,20 @@ SourceFile* load_source_file(const char* filename)
 
     char buffer[MAX_LINE_LENGTH];
 
-    // Read file line by line
+    //read file line by line
     while (fgets(buffer, sizeof(buffer), file))
     {
-        // Remove newline
+        //remove newline
         buffer[strcspn(buffer, "\n\r")] = '\0';
 
-        // Expand array if needed
+
         if (src->line_count >= capacity)
         {
             capacity *= 2;
             char** new_lines = realloc(src->lines, capacity * sizeof(char*));
             if (!new_lines)
             {
-                printf(BRED"Memory allocation error\n"reset);
+                printf("%sMemory allocation error\n%s", BRED, CLRreset);
                 break;
             }
             src->lines = new_lines;
@@ -64,7 +64,7 @@ SourceFile* load_source_file(const char* filename)
     }
 
     fclose(file);
-    printf(BCYN"Loaded %d lines from %s\n"reset,src->line_count, filename);
+    printf("%sLoaded %d lines from %s\n%s", BCYN, src->line_count, filename, CLRreset);
     return src;
 }
 
@@ -82,34 +82,35 @@ void free_source_file(SourceFile* file)
     }
 }
 
-void analyze_project(const char* path, const bool is_directory)
+int analyze_project(const char* path, const bool is_directory)
 {
     struct stat st;
     if (stat(path, &st) != 0) {
         perror("stat");
-        return;
+        return 0;
     }
+    int grand_total_violations = 0;
 
     if (!is_directory) {
         // Expecting a single file
         if (S_ISREG(st.st_mode)) {
-            analyze_with_rules(path);
+            grand_total_violations += analyze_with_rules(path);
         } else {
-            fprintf(stderr, BRED"Error: '%s' is not a regular file\n"reset, path);
+            fprintf(stderr, "%sError: '%s' is not a regular file\n%s", BRED, path, CLRreset);
         }
-        return;
+        return grand_total_violations;
     }
 
-    // Recursive mode: must be a directory
+
     if (!S_ISDIR(st.st_mode)) {
-        fprintf(stderr, BRED"Error: '%s' is not a directory (with -r)\n"reset, path);
-        return;
+        fprintf(stderr, "%sError: '%s' is not a directory (with -r)\n%s", BRED, path, CLRreset);
+        return 0;
     }
 
     DIR *dir = opendir(path);
     if (!dir) {
         perror("opendir");
-        return;
+        return 0;
     }
 
     struct dirent *entry;
@@ -129,48 +130,56 @@ void analyze_project(const char* path, const bool is_directory)
 
         if (S_ISDIR(st.st_mode)) {
             // Recurse into subdirectory
-            analyze_project(fullpath, 1);
+            grand_total_violations += analyze_project(fullpath, 1);
         } else if (S_ISREG(st.st_mode) && is_c_or_h_file(entry->d_name)) {
-            analyze_with_rules(fullpath);
+            grand_total_violations += analyze_with_rules(fullpath);
         }
     }
 
     closedir(dir);
+    return grand_total_violations;
 }
 
-void analyze_with_rules(const char* filename)
+int analyze_with_rules(const char* filename)
 {
     SourceFile* source = load_source_file(filename);
-    if (!source) return;
+    if (!source) return 0;
 
     int total_violations = 0;
-    printf(BCYN"Total rules to run: %d\n"reset, RULE_COUNT);
+    printf("%s\nAnalyzing: %s\n%s", BCYN, filename, CLRreset);
+    printf("%sTotal rules to check: %d\n%s", BCYN, RULE_COUNT, CLRreset);
+
     // Run each rule
     for (int i = 0; i < RULE_COUNT; i++)
     {
-        printf(BWHT"\nChecking %s ---\n"reset, RULES[i].name);
-        printf(BWHT"Description: %s\n"reset, RULES[i].description);
+        printf("%s\n--- Checking Rule: %s ---\n%s", BWHT, RULES[i].name, CLRreset);
+        printf("%sDescription: %s\n%s", BWHT, RULES[i].description, CLRreset);
 
-        int violations = RULES[i].function(source);
+        ViolationNode* violations_list = RULES[i].function(source);
 
-        if (violations > 0)
+        int violation_count = count_violations(violations_list);
+
+        if (violation_count > 0)
         {
-            printf(BYEL"Found %d violation(s)\n"reset, violations);
-            total_violations += violations;
+            printf("%sFound %d violation(s):\n%s", BYEL, violation_count, CLRreset);
+            print_violations(violations_list, RULES[i].name);
+            total_violations += violation_count;
         }
         else
         {
-            printf(BGRN"No violations found\n"reset);
+            printf("%sNo violations found\n%s", BGRN, CLRreset);
         }
+
+        free_violations(violations_list);
     }
 
-    printf(BWHT"\nAnalysis Complete\n"reset);
-    printf(BWHT"Total violations: %d\n"reset, total_violations);
+    printf("%s\n--- Analysis Complete for %s ---\n%s", BWHT, filename, CLRreset);
+    printf("%sTotal violations found in this file: %d\n\n%s", BWHT, total_violations, CLRreset);
 
     free_source_file(source);
+    return total_violations;
 }
 
-// Helper functions for rules
 char* trim_line(const char* line)
 {
     while (*line == ' ' || *line == '\t') line++;
@@ -182,3 +191,4 @@ bool is_comment_or_preprocessor(const char* line)
     char* trimmed = trim_line(line);
     return (trimmed[0] == '/' && trimmed[1] == '/') || trimmed[0] == '#';
 }
+

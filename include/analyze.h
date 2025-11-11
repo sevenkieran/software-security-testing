@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include "formatter.h"
 
 typedef struct {
     char **lines;
@@ -13,28 +14,30 @@ typedef struct {
 } SourceFile;
 
 
-typedef int (*RuleFunction)(const SourceFile *file);//returns number of violations found
+typedef ViolationNode* (*RuleFunction)(const SourceFile *file);//returns number of violations found
 
-// Rule definition
+//rule definition
 typedef struct {
     char name[32];
     char description[200];
     RuleFunction function;
 } Rule;
 
-// Core functions (from src/analyze.c)
+//core functions
 SourceFile* load_source_file(const char *filename);
 void free_source_file(SourceFile *file);
-void analyze_with_rules(const char *filename);
-void analyze_project(const char *path, bool is_directory);
+int analyze_with_rules(const char *filename);
+int analyze_project(const char *path, bool is_directory);
 
-// Helper function for rules
+//helper functions
 char* trim_line(const char *line);
 bool is_comment_or_preprocessor(const char *line);
 
-// Rule functions (from individual rule files in src/)
-int memory_leak_rule(const SourceFile *file);
-int deprecated_header_rule(const SourceFile *file);
-int integer_overflow_rule(const SourceFile *file);
+//rule functions
+ViolationNode* memory_leak_rule(const SourceFile *file);
+ViolationNode* deprecated_header_rule(const SourceFile *file);
+ViolationNode* integer_overflow_rule(const SourceFile *file);
+ViolationNode* signal_safety_rule(const SourceFile *file);
+int analyze_with_rules_return_count(const char *filename);
 
 #endif

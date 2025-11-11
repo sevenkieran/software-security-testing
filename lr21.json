@@ -1,0 +1,6 @@
+{
+  "timestamp": "2025-10-30T14:03:03",
+  "file_analyzed": "test/leak.c",
+  "total_violations": 15,
+  "status": "FAIL"
+}
