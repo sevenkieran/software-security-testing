@@ -4,7 +4,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
-
+#include "json_export.h"
 #include "analyze.h"
 #include "constants.h"
 #include "utils.h"
@@ -28,14 +28,23 @@ SourceFile* load_source_file(const char* filename)
         return NULL;
     } //allocate space that holds filename and lines array
 
-    src->filename = malloc(strlen(filename) + 1);
-    strcpy(src->filename, filename); //store file name
+    src->filename = strdup(filename);
+    if (!src->filename) {
+        free(src);
+        fclose(file);
+        return NULL;
+    }
     src->line_count = 0;
 
     //allocate space, each 'lines' holds a line of code, can expand with realloc
     int capacity = INITIAL_LINES;
-    src->lines = malloc(capacity * sizeof(char*));
-
+    src->lines = (char**)malloc(capacity * sizeof(char*));
+    if (!src->lines) {
+        free(src->filename);
+        free(src);
+        fclose(file);
+        return NULL;
+    }
     char buffer[MAX_LINE_LENGTH];
 
     //read file line by line
@@ -52,14 +61,28 @@ SourceFile* load_source_file(const char* filename)
             if (!new_lines)
             {
                 printf("%sMemory allocation error\n%s", BRED, CLRreset);
-                break;
+                for (int i = 0; i < src->line_count; i++) free(src->lines[i]);
+                free(src->lines);
+                free(src->filename);
+                free(src);
+                fclose(file);
+                return NULL;
             }
             src->lines = new_lines;
         }
 
         // Store the line
-        src->lines[src->line_count] = malloc(strlen(buffer) + 1);
-        strcpy(src->lines[src->line_count], buffer);
+        src->lines[src->line_count] = strdup(buffer);
+        if (!src->lines[src->line_count]) {
+            printf("%sMemory allocation error (strdup)\n%s", BRED, CLRreset);
+            // Clean up
+            for (int i = 0; i < src->line_count; i++) free(src->lines[i]);
+            free(src->lines);
+            free(src->filename);
+            free(src);
+            fclose(file);
+            return NULL;
+        }
         src->line_count++; //allocate enough to store line including null terminator, then copy to new pointer
     }
 
@@ -82,7 +105,7 @@ void free_source_file(SourceFile* file)
     }
 }
 
-int analyze_project(const char* path, const bool is_directory)
+int analyze_project(const char* path, const bool is_directory, FileResultNode** results_head)
 {
     struct stat st;
     if (stat(path, &st) != 0) {
@@ -94,7 +117,11 @@ int analyze_project(const char* path, const bool is_directory)
     if (!is_directory) {
         // Expecting a single file
         if (S_ISREG(st.st_mode)) {
-            grand_total_violations += analyze_with_rules(path);
+            int file_violations = analyze_with_rules(path);
+            if (file_violations > 0) {
+                append_file_result(results_head, path, file_violations);
+            }
+            grand_total_violations += file_violations;
         } else {
             fprintf(stderr, "%sError: '%s' is not a regular file\n%s", BRED, path, CLRreset);
         }
@@ -130,9 +157,13 @@ int analyze_project(const char* path, const bool is_directory)
 
         if (S_ISDIR(st.st_mode)) {
             // Recurse into subdirectory
-            grand_total_violations += analyze_project(fullpath, 1);
+            grand_total_violations += analyze_project(fullpath, 1, results_head);
         } else if (S_ISREG(st.st_mode) && is_c_or_h_file(entry->d_name)) {
-            grand_total_violations += analyze_with_rules(fullpath);
+            int file_violations = analyze_with_rules(fullpath);
+            if (file_violations > 0) {
+                append_file_result(results_head, fullpath, file_violations);
+            }
+            grand_total_violations += file_violations;
         }
     }
 

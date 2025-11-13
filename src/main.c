@@ -12,8 +12,9 @@
 
 int main(int argc, char *argv[]) {
     bool recursive_enabled = false;
-    ViolationNode* violations_list = NULL;
+    //ViolationNode* violations_list = NULL;
     char *json_output = NULL;
+    FileResultNode* results_head = NULL;
 
     static struct option long_options[] = {
         {"help",      no_argument, 0, 'h'},
@@ -61,14 +62,14 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    int total_violations = analyze_project(path_arg, recursive_enabled);
+    int total_violations = analyze_project(path_arg, recursive_enabled, &results_head);
 
     printf("\nAnalysis Complete.\nTotal Violations: %d\n", total_violations);
 
     if (json_output) {
-        export_violations_json(path_arg, total_violations, json_output);
+        export_violations_json(path_arg, total_violations, results_head, json_output);
     }
-
+    free_file_results(results_head);
 
 
     return (total_violations > 0) ? 1 : 0;

@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "formatter.h"
+#include "json_export.h"
 
 typedef struct {
     char **lines;
@@ -27,7 +28,7 @@ typedef struct {
 SourceFile* load_source_file(const char *filename);
 void free_source_file(SourceFile *file);
 int analyze_with_rules(const char *filename);
-int analyze_project(const char *path, bool is_directory);
+int analyze_project(const char *path, bool is_directory, FileResultNode** results_head);
 
 //helper functions
 char* trim_line(const char *line);
