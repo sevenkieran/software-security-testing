@@ -56,7 +56,7 @@ jobs:
           
           # This new jq command reads the .files array, filters for
           # any file with violations > 0, and prints it.
-          jq -r '.files[] | select(.violations > 0) | "  ❌ \(.file): \(.violations) violations"' analysis-report.json
+          jq -r '.files[] | select(.violations > 0) | "  \(.file): \(.violations) violations"' analysis-report.json
           
           echo ""
           echo "------------------------------------------"
