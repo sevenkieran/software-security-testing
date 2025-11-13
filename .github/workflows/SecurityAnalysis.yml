@@ -32,7 +32,7 @@ jobs:
       - name: Run Security Analysis
         run: |
           set -e
-          ./build/MemoryLeakDetector -r --json analysis-report.json . || echo "Analyzer exited with code $? (may be due to findings)"
+          ./build/MemoryLeakDetector -r test/ --json analysis-report.json . || echo "Analyzer exited with code $? (may be due to findings)"
 
       - name: Upload Analysis Report Artifact
         if: always()
