@@ -49,6 +49,7 @@ ViolationNode* memory_leak_rule(const SourceFile *file) {
         }
     }
 
+
     if (malloc_count > free_count) {
         char message[256];
         snprintf(message, sizeof(message),
