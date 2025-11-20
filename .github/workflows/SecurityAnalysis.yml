@@ -43,7 +43,6 @@ jobs:
 
       - name: Check for Violations
         run: |
-          # This line is the same
           VIOLATIONS=$(jq '.total_violations' analysis-report.json)
           
           # --- This block is new and improved ---
@@ -54,8 +53,6 @@ jobs:
           
           echo "Files with violations:"
           
-          # This new jq command reads the .files array, filters for
-          # any file with violations > 0, and prints it.
           jq -r '.files[] | select(.violations > 0) | "  \(.file): \(.violations) violations"' analysis-report.json
           
           echo ""
@@ -63,7 +60,6 @@ jobs:
           echo "  TOTAL VIOLATIONS FOUND: $VIOLATIONS"
           echo "------------------------------------------"
           
-          # This logic is the same
           if [ "$VIOLATIONS" -gt 0 ]; then
             echo "Security analysis found $VIOLATIONS total violation(s)"
             exit 1
