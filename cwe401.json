@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-02-24T18:17:16",
+  "analysis_path": "test/cwe401.c",
+  "total_violations": 8,
+  "status": "FAIL",
+  "files": [
+    {
+      "file": "test/cwe401.c",
+      "violations": 8
+    }
+  ]
+}
