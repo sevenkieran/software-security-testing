@@ -29,12 +29,24 @@ ViolationNode* memory_leak_rule(const SourceFile *file) {
         }
 
         //Check for double free
-        if (strstr(line, "free(") && strstr(line, "free(") != strrchr(line, 'f')) {
+        /*if (strstr(line, "free(") && strstr(line, "free(") != strrchr(line, 'f')) {
             append_violation(&violations,
                            i + 1,
                            line,
                            "Potential double free detected",
                            MEMORY_LEAK);
+        }*/
+        char *first = strstr(line, "free(");
+        if (first) {
+        // Search for a second occurrence starting AFTER the first one
+            char *second = strstr(first + 1, "free(");
+            if (second) {
+                append_violation(&violations,
+                                    i + 1,
+                                line,
+                        "Potential double free detected (multiple frees on one line)",
+                            MEMORY_LEAK);
+            }
         }
     }
 

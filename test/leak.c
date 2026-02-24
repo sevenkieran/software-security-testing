@@ -5,33 +5,29 @@
 #include <signal.h>
 
 int main() {
-    printf("Testing memory leak detection\n");
 
-    // Memory leak example
     char *buffer1 = malloc(100);
     strcpy(buffer1, "Hello World");
-    // Missing free(buffer1) - should trigger leak warning
+    //Missing free(buffer1)
 
-    // Proper memory management
     char *buffer2 = malloc(200);
     if (buffer2 != NULL) {
         strcpy(buffer2, "Proper cleanup");
         free(buffer2);
     }
 
-    // Another leak
     int *numbers = malloc(10 * sizeof(int));
     numbers[0] = 42;
-    // Missing free(numbers) - should trigger leak warning
+    //Missing free(numbers)
 
-    // Potential double free (commented out to avoid crash)
+    //Potential double free
     char *temp = malloc(50);
     free(temp);
 
     int two = 2;
     char *intofl = malloc(50 * sizeof(two));
     free(intofl);
-    // free(temp);  // Would be double free if uncommented
+    // free(temp); safe
 
     signal(SIGUSR1,terminate_handler);
     while (1) {
@@ -39,6 +35,9 @@ int main() {
     }
 
     signal(SIG1, unsafe_handlers);
+
+    char *doubleptr = malloc(10);
+    free(doubleptr); free(doubleptr);
     return 0;
 }
 
@@ -49,3 +48,4 @@ void unsafe_handlers(int signal) {
     char *buff2 = malloc(50);
 
 }
+
